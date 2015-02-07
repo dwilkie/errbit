@@ -1,6 +1,9 @@
 # Set SMTP settings if given.
+p Errbit::Config.email_delivery_method
+
 if Errbit::Config.email_delivery_method == :smtp
   ActionMailer::Base.delivery_method = :smtp
+  p "In base settings"
   ActionMailer::Base.smtp_settings = {
     :address        => Errbit::Config.smtp_address,
     :port           => Errbit::Config.smtp_port,
@@ -28,5 +31,12 @@ end
     protocol: Errbit::Config.protocol
   }.select { |k, v| v }
 
+  p "default values"
+  p default_values
+
+  p "merging with"
+  p options_from_config
+
   default.reverse_merge!(options_from_config)
+
 end
