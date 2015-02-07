@@ -1,8 +1,5 @@
 # Set SMTP settings if given.
-p "delivery method"
-p Errbit::Config.email_delivery_method
 if Errbit::Config.email_delivery_method == :smtp
-  p "in here"
   ActionMailer::Base.delivery_method = :smtp
   ActionMailer::Base.smtp_settings = {
     :address        => Errbit::Config.smtp_address,
