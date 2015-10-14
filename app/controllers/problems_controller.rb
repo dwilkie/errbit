@@ -12,26 +12,20 @@ class ProblemsController < ApplicationController
     :resolve_several, :unresolve_several, :unmerge_several
   ]
 
+  expose(:app_scope) {
+    params[:app_id] ? App.where(:_id => params[:app_id]) : App.all
+  }
+
   expose(:app) {
-    if current_user.admin?
-      App.find(params[:app_id])
-    else
-      current_user.apps.find(params[:app_id])
-    end
+    AppDecorator.new app_scope.find(params[:app_id])
   }
 
   expose(:problem) {
-    app.problems.find(params[:id])
+    ProblemDecorator.new app.problems.find(params[:id])
   }
-
 
   expose(:all_errs) {
     params[:all_errs]
-  }
-
-  expose(:app_scope) {
-    apps = current_user.admin? ? App.all : current_user.apps
-    params[:app_id] ? apps.where(:_id => params[:app_id]) : apps
   }
 
   expose(:params_environement) {
@@ -39,11 +33,11 @@ class ProblemsController < ApplicationController
   }
 
   expose(:problems) {
-    pro = Problem.for_apps(
-      app_scope
-    ).in_env(
-      params_environement
-    ).all_else_unresolved(all_errs).ordered_by(params_sort, params_order)
+    pro = Problem
+      .for_apps(app_scope)
+      .in_env(params_environement)
+      .all_else_unresolved(all_errs)
+      .ordered_by(params_sort, params_order)
 
     if request.format == :html
       pro.page(params[:page]).per(current_user.per_page)
@@ -55,16 +49,16 @@ class ProblemsController < ApplicationController
   def index; end
 
   def show
-    @notices  = problem.notices.reverse_ordered.page(params[:notice]).per(1)
-    @notice   = @notices.first
+    @notices = problem.object.notices.reverse_ordered
+      .page(params[:notice]).per(1)
+    @notice  = NoticeDecorator.new @notices.first
     @comment = Comment.new
   end
 
   def create_issue
-    body = render_to_string "issue_trackers/issue", layout: false, formats: [:txt]
-    title = "[#{ problem.environment }][#{ problem.where }] #{problem.message.to_s.truncate(100)}"
+    issue = Issue.new(problem: problem, user: current_user)
+    issue.body = render_to_string(*issue.render_body_args)
 
-    issue = Issue.new(problem: problem, user: current_user, title: title, body: body)
     unless issue.save
       flash[:error] = issue.errors.full_messages.join(', ')
     end
@@ -79,7 +73,7 @@ class ProblemsController < ApplicationController
 
   def resolve
     problem.resolve!
-    flash[:success] = 'Great news everyone! The err has been resolved.'
+    flash[:success] = 'Great news everyone! The error has been resolved.'
     redirect_to :back
   rescue ActionController::RedirectBackError
     redirect_to app_path(app)
@@ -134,7 +128,6 @@ class ProblemsController < ApplicationController
 
   def search
     ps = Problem.search(params[:search]).for_apps(app_scope).in_env(params[:environment]).all_else_unresolved(params[:all_errs]).ordered_by(params_sort, params_order)
-    selected_problems = params[:problems] || []
     self.problems = ps.page(params[:page]).per(current_user.per_page)
     respond_to do |format|
       format.html { render :index }

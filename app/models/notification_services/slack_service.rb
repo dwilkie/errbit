@@ -1,41 +1,71 @@
 class NotificationServices::SlackService < NotificationService
   Label = "slack"
   Fields += [
-    [:subdomain, {
-      :placeholder => 'subdomain',
-      :label => 'Subdomain portion for Slack service'
-    }],
-    [:api_token, {
-      :placeholder => 'Slack Integration Token',
-      :label => 'Token'
-    }],
-    [:room_id, {
-      :placeholder => '#general',
-      :label => 'Room where Slack should notify'
+    [:service_url, {
+      :placeholder => 'Slack Hook URL (https://hooks.slack.com/services/XXXXXXXXX/XXXXXXXXX/XXXXXXXXX)',
+      :label => 'Hook URL'
     }]
   ]
 
   def check_params
-    if Fields.detect {|f| self[f[0]].blank? unless f[0] == :room_id }
-      errors.add :base, "You must specify your Slack subdomain and token."
+    if Fields.detect {|f| self[f[0]].blank? }
+      errors.add :base, "You must specify your Slack Hook url."
     end
   end
 
-  def url
-    "https://#{subdomain}.slack.com/services/hooks/incoming-webhook?token=#{api_token}"
-  end
-
   def message_for_slack(problem)
-    "[#{problem.app.name}][#{problem.environment}][#{problem.where}]: #{problem.error_class} #{problem_url(problem)}"
+    "[#{problem.app.name}][#{problem.environment}][#{problem.where}]: #{problem.error_class} #{problem.url}"
   end
 
   def post_payload(problem)
-    payload = {:text => message_for_slack(problem) }
-    payload[:channel] = room_id unless room_id.empty?
-    payload.to_json
+    {
+      :attachments => [
+        {
+           :fallback => message_for_slack(problem),
+           :pretext => "<#{problem_url(problem)}|Errbit - #{problem.app.name}: #{problem.error_class}>",
+           :color => "#D00000",
+           :fields => [
+              {
+                 :title => "Environment",
+                 :value => problem.environment,
+                 :short => false
+              },
+              {
+                 :title => "Location",
+                 :value => problem.where,
+                 :short => false
+              },
+              {
+                 :title => "Message",
+                 :value => problem.message.to_s,
+                 :short => false
+              },
+              {
+                 :title => "First Noticed",
+                 :value => problem.first_notice_at,
+                 :short => false
+              },
+              {
+                 :title => "Last Noticed",
+                 :value => problem.last_notice_at,
+                 :short => false
+              },
+              {
+                 :title => "Times Occurred",
+                 :value => problem.notices_count,
+                 :short => false
+              }
+           ]
+        }
+      ]
+    }.to_json
   end
 
   def create_notification(problem)
-    HTTParty.post(url, :body => post_payload(problem), :headers => { 'Content-Type' => 'application/json' })
+    HTTParty.post(service_url, :body => post_payload(problem), :headers => { 'Content-Type' => 'application/json' })
+  end
+
+  def configured?
+    service_url.present?
   end
 end

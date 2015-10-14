@@ -4,7 +4,7 @@
 - if Errbit::Config.github_authentication
   - content_for :action_bar do
     %div.action-bar
-      %span.github= link_to "Sign in with GitHub", user_omniauth_authorize_path(:github)
+      %span.github= link_to "Sign in with #{Errbit::Config.github_site_title}", user_omniauth_authorize_path(:github)
 
 = form_for(resource, :as => resource_name, :url => session_path(resource_name)) do |f|
   .required
@@ -12,7 +12,7 @@
     = f.text_field auth_key, :type => (Errbit::Config.user_has_username ? 'text' : 'email'), :tabindex => 1, :autofocus => true
 
   .required
-    = link_to 'forget it?', new_password_path(resource_name), :class => 'float-right', :id => "forgot_password"
+    = link_to 'forgot it?', new_password_path(resource_name), :class => 'float-right', :id => "forgot_password"
     = f.label :password
     = f.password_field :password, :tabindex => 2
 

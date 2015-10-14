@@ -1,6 +1,6 @@
 <%= @user.name %> has just commented on an error that occurred in <%= @notice.environment_name %>: <%= raw(@notice.message) %>
 
-This err has occurred <%= pluralize @notice.problem.notices_count, 'time' %>. You should really look into it here:
+This error has occurred <%= pluralize @notice.problem.notices_count, 'time' %>. You should really look into it here:
 
   <%= app_problem_url(@app, @notice.problem) %>
 
@@ -21,8 +21,8 @@ WHERE:
 
 <%= @notice.where %>
 
-<% @notice.in_app_backtrace_lines.each do |line| %>
-  <%= line %>
+<% @notice.backtrace.lines.each do |line| %>
+  <% next unless line.in_app? %><%= line %>
 <% end %>
 
 

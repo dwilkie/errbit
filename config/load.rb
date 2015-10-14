@@ -1,6 +1,8 @@
 # load default ENV values (without overwriting any existing value)
 Dotenv.load('.env.default')
 
+require_relative '../lib/configurator'
+
 # map config keys to environment variables
 #
 # We use the first non-nil environment variable in the list. If the last array
@@ -19,10 +21,12 @@ Errbit::Config = Configurator.run({
   per_app_email_at_notices:  ['ERRBIT_PER_APP_EMAIL_AT_NOTICES'],
   notify_at_notices:         ['ERRBIT_NOTIFY_AT_NOTICES'],
   per_app_notify_at_notices: ['ERRBIT_PER_APP_NOTIFY_AT_NOTICES'],
+  log_location:              ['ERRBIT_LOG_LOCATION'],
+  log_level:                 ['ERRBIT_LOG_LEVEL'],
 
   serve_static_assets:       ['SERVE_STATIC_ASSETS'],
   secret_key_base:           ['SECRET_KEY_BASE'],
-  mongo_url:                 ['MONGOLAB_URI', 'MONGOHQ_URL', 'MONGODB_URL', 'MONGO_URL'],
+  mongo_url:                 %w(MONGOLAB_URI MONGOHQ_URL MONGODB_URL MONGO_URL),
 
   # github
   github_url:                ['GITHUB_URL', ->(values) {
@@ -33,15 +37,19 @@ Errbit::Config = Configurator.run({
   github_secret:             ['GITHUB_SECRET'],
   github_org_id:             ['GITHUB_ORG_ID'],
   github_access_scope:       ['GITHUB_ACCESS_SCOPE'],
+  github_api_url:            ['GITHUB_API_URL'],
+  github_site_title:         ['GITHUB_SITE_TITLE'],
 
-  email_delivery_method:     ['EMAIL_DELIVERY_METHOD'],
+  email_delivery_method:     ['EMAIL_DELIVERY_METHOD', -> (values) {
+    values[:email_delivery_method] && values[:email_delivery_method].to_sym
+  }],
 
   # smtp settings
   smtp_address:              ['SMTP_SERVER'],
   smtp_port:                 ['SMTP_PORT'],
   smtp_authentication:       ['SMTP_AUTHENTICATION'],
-  smtp_user_name:            ['SMTP_USERNAME', 'SENDGRID_USERNAME'],
-  smtp_password:             ['SMTP_PASSWORD', 'SENDGRID_PASSWORD'],
+  smtp_user_name:            %w(SMTP_USERNAME SENDGRID_USERNAME),
+  smtp_password:             %w(SMTP_PASSWORD SENDGRID_PASSWORD),
   smtp_domain:               ['SMTP_DOMAIN', 'SENDGRID_DOMAIN', ->(values) {
     values[:smtp_domain] ||
     (values[:email_from] && values[:email_from].split('@').last)||

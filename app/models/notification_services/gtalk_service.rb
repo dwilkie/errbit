@@ -46,8 +46,8 @@ class NotificationServices::GtalkService < NotificationService
     client.auth(api_token)
 
     #has to look like this to be formatted properly in the client
-    message =  """#{problem.app.name.to_s}
-#{Errbit::Config.protocol}://#{Errbit::Config.host}/apps/#{problem.app.id.to_s}
+    message =  """#{problem.app.name}
+#{Errbit::Config.protocol}://#{Errbit::Config.host}/apps/#{problem.app.id}
 #{notification_description problem}"""
 
     # post the issue to the xmpp room(s)
@@ -59,13 +59,13 @@ class NotificationServices::GtalkService < NotificationService
 
   private
  
-  def send_to_users client, message
-    user_id.gsub(/ /i, ",").gsub(/;/i, ",").split(",").map(&:strip).reject(&:empty?).each do |user|
+  def send_to_users(client, message)
+    user_id.tr(' ', ",").tr(';', ",").split(",").map(&:strip).reject(&:empty?).each do |user|
       client.send(Jabber::Message.new(user, message))
     end
   end
 
-  def send_to_muc client, message
+  def send_to_muc(client, message)
     #TODO: set this so that it can send to multiple rooms like users, nb multiple room joins in one send fail randomly so leave as one room for the moment 
     muc = Jabber::MUC::SimpleMUCClient.new(client)
     muc.join(room_id + "/errbit") 

@@ -36,12 +36,25 @@ describe AirbrakeApi::V3::NoticeParser do
     expect(report).to be_valid
   end
 
+  it 'parses JSON payload with missing backtrace' do
+    json = Rails.root.join('spec', 'fixtures', 'api_v3_request_without_backtrace.json').read
+    params = JSON.parse(json)
+    params['key'] = app.api_key
+
+    report = AirbrakeApi::V3::NoticeParser.new(params).report
+    report.generate_notice!
+
+    expect(report.error_class).to eq('Error')
+    expect(report.message).to eq('Error: TestError')
+    expect(report.backtrace.lines.size).to eq(0)
+  end
+
   def build_params(options = {})
     json = Rails.root.join('spec', 'fixtures', 'api_v3_request.json').read
     data = JSON.parse(json)
 
-    data['key'] = options[:key] if options.has_key?(:key)
-    data['project_id'] = options[:project_id] if options.has_key?(:project_id)
+    data['key'] = options[:key] if options.key?(:key)
+    data['project_id'] = options[:project_id] if options.key?(:project_id)
 
     data
   end

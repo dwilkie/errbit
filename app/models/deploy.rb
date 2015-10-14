@@ -33,12 +33,14 @@ class Deploy
     end
 
     def store_cached_attributes_on_problems
-      Problem.where(:app_id => app.id).each(&:cache_app_attributes)
+      Problem.where(:app_id => app.id).update_all(
+        last_deploy_at: created_at
+      )
     end
 
     def deliver_email
       if app.notify_on_deploys? && app.notification_recipients.any?
-        Mailer.deploy_notification(self).deliver
+        Mailer.deploy_notification(self).deliver_now
       end
     end
 

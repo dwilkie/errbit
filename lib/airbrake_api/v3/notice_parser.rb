@@ -27,12 +27,12 @@ module AirbrakeApi
       private
 
       def error
-        raise AirbrakeApi::ParamsError unless params.has_key?('errors') && params['errors'].any?
+        raise AirbrakeApi::ParamsError unless params.key?('errors') && params['errors'].any?
         @error ||= params['errors'].first
       end
 
       def backtrace
-        error['backtrace'].map do |backtrace_line|
+        (error['backtrace'] || []).map do |backtrace_line|
           {
             method: backtrace_line['function'],
             file: backtrace_line['file'],
