@@ -72,6 +72,7 @@ group :development do
   gem 'capistrano-rbenv',   require: false
   gem 'capistrano3-puma',   require: false
 
+
   # better errors
   gem 'better_errors'
   gem 'binding_of_caller', platform: 'ruby'
@@ -87,6 +88,7 @@ group :test do
   gem 'fabrication'
   gem 'capybara'
   gem 'poltergeist'
+  gem 'phantomjs'
   gem 'launchy'
   gem 'email_spec'
   gem 'timecop'
@@ -97,8 +99,11 @@ group :heroku, :production do
   gem 'rails_12factor', require: ENV.key?("HEROKU")
 end
 
+group :no_docker, :test, :development do
+ gem 'therubyracer', :platform => :ruby # C Ruby (MRI) or Rubinius, but NOT Windows
+end
+
 gem 'puma'
-gem 'therubyracer', platform: :ruby # C Ruby (MRI) or Rubinius, but NOT Windows
 gem 'sass-rails'
 gem 'uglifier'
 # We can't upgrade because not compatible to jquery >= 1.9.
@@ -106,6 +111,8 @@ gem 'uglifier'
 gem 'jquery-rails', '~> 2.1.4'
 gem 'pjax_rails'
 gem 'underscore-rails'
+
+gem 'sucker_punch'
 
 ENV['USER_GEMFILE'] ||= './UserGemfile'
 eval_gemfile ENV['USER_GEMFILE'] if File.exist?(ENV['USER_GEMFILE'])

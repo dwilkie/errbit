@@ -114,6 +114,13 @@ describe ProblemsController, type: 'controller' do
       expect(controller.problems).to include(@problem1)
       expect(controller.problems).to_not include(@problem2)
     end
+
+    it "works when given string is empty" do
+      get :search, search: ""
+      expect(controller.problems).to include(@problem1)
+      expect(controller.problems).to include(@problem2)
+    end
+
   end
 
   describe "GET /apps/:app_id/problems/:id" do
@@ -427,7 +434,7 @@ describe ProblemsController, type: 'controller' do
 
       it "should display a message" do
         put :destroy_all, app_id: @app.id
-        expect(request.flash[:success]).to match(/been deleted/)
+        expect(request.flash[:success]).to match(/be deleted/)
       end
 
       it "should redirect back to the app page" do

@@ -108,7 +108,7 @@ Authentication
 --------------
 ### Configuring GitHub authentication:
 * Set GITHUB_AUTHENTICATION=true
-* Register your instance of Errbit at https://github.com/settings/applications
+* Register your instance of Errbit at https://github.com/settings/applications/new
 
 If you host Errbit at errbit.example.com, you would fill in:
 
@@ -171,7 +171,7 @@ to your user account on your **Edit profile** page.
 
 ### Configuring LDAP authentication:
 
-* Set USER_HAS_USERNAME=true
+* Set ERRBIT_USER_HAS_USERNAME=true
 * Follow the instructions at
   https://github.com/cschiewek/devise_ldap_authenticatable to set up the
   devise_ldap_authenticatable gem.
@@ -252,7 +252,7 @@ Errbit can now display information about the user who experienced an error.
 This gives you the ability to ask the user for more information,
 and let them know when you've fixed the bug.
 
-The Airbrake gem will look for ```current_user``` or ```current_member```. By defailt it will only send the ```id``` of the user, to specify other attributes you can set ```config.user_attributes```. See [the Airbrake wiki for more information](https://github.com/airbrake/airbrake/wiki/Sending-current-user-information).
+The Airbrake gem will look for ```current_user``` or ```current_member```. By default it will only send the ```id``` of the user, to specify other attributes you can set ```config.user_attributes```. See [the Airbrake wiki for more information](https://github.com/airbrake/airbrake/wiki/Sending-current-user-information).
 
 If user information is received with an error report,
 it will be displayed under the *User Details* tab:
